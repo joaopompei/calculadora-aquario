@@ -629,6 +629,32 @@
         footer a:hover {
             color: var(--primary);
         }
+
+        .visitor-counter {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .counter-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .counter-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--secondary);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .counter-icon {
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 <body>
@@ -744,6 +770,13 @@
                 Os valores acima são apenas para simulação, sem nenhuma validade legal.<br>
                 Nenhuma informação deverá ser tomada como verdade nem usada como referência legal.
             </div>
+            <div class="visitor-counter">
+                <div class="counter-label">Visitantes</div>
+                <div class="counter-value">
+                    <span class="counter-icon">👁️</span>
+                    <span id="visit-count">Carregando...</span>
+                </div>
+            </div>
         </footer>
     </div>
 
@@ -834,7 +867,7 @@
                 id: equipamentoId++,
                 nome: '',
                 potencia: 0,
-                quantidade: 0,
+                quantidade: 1,
                 horasPorDia: 0,
                 novo: true
             };
@@ -877,7 +910,7 @@
                             <label>Quantidade</label>
                             <input type="number" 
                                    id="input-quantidade"
-                                   value="${eq.quantidade || ''}" 
+                                   value="${eq.quantidade || 1}" 
                                    list="quantidade-list"
                                    min="1"
                                    placeholder="1">
@@ -1056,6 +1089,34 @@
 
         // Recalcular quando a tarifa mudar
         document.getElementById('tarifa').addEventListener('input', calcularConsumo);
+
+        // Contador de visitas usando API gratuita
+        async function carregarContadorVisitas() {
+            try {
+                // Usando CountAPI - serviço gratuito de contador
+                // Você pode personalizar o namespace e key
+                const namespace = 'calculadora-aquario';
+                const key = 'visitas';
+                const url = `https://api.countapi.xyz/hit/${namespace}/${key}`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.value) {
+                    document.getElementById('visit-count').textContent = data.value.toLocaleString('pt-BR');
+                } else {
+                    document.getElementById('visit-count').textContent = '---';
+                }
+            } catch (error) {
+                console.error('Erro ao carregar contador:', error);
+                document.getElementById('visit-count').textContent = '---';
+            }
+        }
+
+        // Carregar contador quando a página carregar
+        window.addEventListener('DOMContentLoaded', () => {
+            carregarContadorVisitas();
+        });
     </script>
 </body>
 </html>
