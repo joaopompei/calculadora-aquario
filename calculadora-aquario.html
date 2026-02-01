@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Consumo - Aquário</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0a7ea4;
+            --primary-dark: #065a7a;
+            --secondary: #14b8a6;
+            --accent: #fbbf24;
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #475569;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 50% 50%, rgba(20, 184, 166, 0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(10, 126, 164, 0.08) 0%, transparent 40%);
+            animation: pulse 15s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(5deg); }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        .icon-wave {
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.6s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .card:nth-child(2) { animation-delay: 0.1s; }
+        .card:nth-child(3) { animation-delay: 0.2s; }
+        .card:nth-child(4) { animation-delay: 0.3s; }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .tarifa-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        @media (max-width: 768px) {
+            .tarifa-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: var(--bg-input);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--secondary);
+            background: var(--bg-card);
+            box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+        }
+
+        /* Estilo para o ícone de dropdown no input */
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper::after {
+            content: '▼';
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            pointer-events: none;
+        }
+
+        .btn {
+            padding: 0.875rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(20, 184, 166, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-input);
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .btn-remove {
+            background: transparent;
+            color: #ef4444;
+            padding: 0.5rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 1.25rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-remove:hover {
+            background: rgba(239, 68, 68, 0.1);
+            transform: scale(1.1);
+        }
+
+        .btn-salvar {
+            background: var(--secondary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .btn-salvar:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(20, 184, 166, 0.3);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .btn-cancelar {
+            background: transparent;
+            color: var(--text-secondary);
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            border: 2px solid var(--border);
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .btn-cancelar:hover {
+            border-color: var(--text-secondary);
+            color: var(--text-primary);
+        }
+
+        .btn-add {
+            width: 100%;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            color: white;
+            margin-top: 1rem;
+        }
+
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(20, 184, 166, 0.3);
+        }
+
+        .equipamento-item {
+            background: var(--bg-input);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border: 2px solid var(--border);
+            transition: all 0.3s ease;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .equipamento-item:hover {
+            border-color: var(--secondary);
+            background: rgba(20, 184, 166, 0.05);
+        }
+
+        .equipamento-nome-display {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+
+        .equipamento-info {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+            text-align: center;
+        }
+
+        .equipamento-lista-container {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .lista-header {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+
+        .lista-header-item {
+            text-align: left;
+        }
+
+        .lista-header-item:nth-child(2),
+        .lista-header-item:nth-child(3),
+        .lista-header-item:nth-child(4) {
+            text-align: center;
+        }
+
+        .lista-header-item:last-child {
+            text-align: right;
+        }
+
+        .form-equipamento {
+            background: var(--bg-input);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid var(--secondary);
+            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.1);
+        }
+
+        .form-equipamento-titulo {
+            font-size: 0.9rem;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .equipamento-fields {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .equipamento-item {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+                text-align: left;
+            }
+
+            .equipamento-info {
+                text-align: left;
+            }
+
+            .lista-header {
+                display: none;
+            }
+
+            .equipamento-fields {
+                grid-template-columns: 1fr;
+            }
+
+            .equipamento-nome-display::before {
+                content: '📌 ';
+            }
+        }
+
+        .resultado-section {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .resultado-titulo {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .resultado-valor {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .consumo-total {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            text-shadow: 0 4px 20px rgba(251, 191, 36, 0.4);
+        }
+
+        .custo-total {
+            font-size: 2rem;
+            font-weight: 600;
+            color: white;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .resumo-equipamentos {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .resumo-titulo {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .resumo-lista {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .resumo-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 1rem;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .resumo-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+
+        .resumo-item-nome {
+            font-weight: 600;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .resumo-item-horas {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-family: 'JetBrains Mono', monospace;
+            text-align: right;
+        }
+
+        .resumo-item-consumo {
+            font-size: 0.875rem;
+            color: var(--accent);
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            text-align: right;
+        }
+
+        .detalhes-consumo {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .detalhe-item {
+            text-align: center;
+        }
+
+        .detalhe-label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 0.25rem;
+        }
+
+        .detalhe-valor {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: white;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        @media (max-width: 768px) {
+            .resumo-item {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 0.5rem;
+            }
+
+            .resumo-item-horas,
+            .resumo-item-consumo {
+                text-align: center;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .consumo-total {
+                font-size: 2rem;
+            }
+
+            .custo-total {
+                font-size: 1.5rem;
+            }
+
+            .tarifa-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        footer {
+            margin-top: 4rem;
+            padding: 2rem 1rem;
+            text-align: center;
+            border-top: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+
+        footer .credits {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        footer .disclaimer {
+            max-width: 600px;
+            margin: 0 auto;
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+
+        footer a {
+            color: var(--secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        footer a:hover {
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><span class="icon-wave">🐠</span> Calculadora de Consumo - Aquário</h1>
+            <p class="subtitle">Calcule o gasto de energia dos equipamentos do seu aquário</p>
+        </header>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-icon">⚡</span>
+                <h2 class="card-title">Tarifa de Energia</h2>
+            </div>
+            <div class="tarifa-section">
+                <div class="input-group">
+                    <label for="estado">Estado</label>
+                    <select id="estado">
+                        <option value="">Selecione seu estado</option>
+                        <option value="AC">Acre (AC)</option>
+                        <option value="AL">Alagoas (AL)</option>
+                        <option value="AP">Amapá (AP)</option>
+                        <option value="AM">Amazonas (AM)</option>
+                        <option value="BA">Bahia (BA)</option>
+                        <option value="CE">Ceará (CE)</option>
+                        <option value="DF">Distrito Federal (DF)</option>
+                        <option value="ES">Espírito Santo (ES)</option>
+                        <option value="GO">Goiás (GO)</option>
+                        <option value="MA">Maranhão (MA)</option>
+                        <option value="MT">Mato Grosso (MT)</option>
+                        <option value="MS">Mato Grosso do Sul (MS)</option>
+                        <option value="MG">Minas Gerais (MG)</option>
+                        <option value="PA">Pará (PA)</option>
+                        <option value="PB">Paraíba (PB)</option>
+                        <option value="PR">Paraná (PR)</option>
+                        <option value="PE">Pernambuco (PE)</option>
+                        <option value="PI">Piauí (PI)</option>
+                        <option value="RJ">Rio de Janeiro (RJ)</option>
+                        <option value="RN">Rio Grande do Norte (RN)</option>
+                        <option value="RS">Rio Grande do Sul (RS)</option>
+                        <option value="RO">Rondônia (RO)</option>
+                        <option value="RR">Roraima (RR)</option>
+                        <option value="SC">Santa Catarina (SC)</option>
+                        <option value="SP">São Paulo (SP)</option>
+                        <option value="SE">Sergipe (SE)</option>
+                        <option value="TO">Tocantins (TO)</option>
+                    </select>
+                    <small style="color: var(--text-secondary); display: block; margin-top: 0.5rem;">
+                        Selecione para preencher automaticamente
+                    </small>
+                </div>
+                <div class="input-group">
+                    <label for="tarifa">Valor do kWh (R$)</label>
+                    <input type="number" id="tarifa" step="0.01" value="0.85" placeholder="Ex: 0.85">
+                    <small style="color: var(--text-secondary); display: block; margin-top: 0.5rem;">
+                        Você pode editar manualmente
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-icon">🔌</span>
+                <h2 class="card-title">Equipamentos</h2>
+            </div>
+            
+            <div id="form-container"></div>
+            
+            <button class="btn btn-add" onclick="mostrarFormulario()" id="btn-adicionar">+ Adicionar Equipamento</button>
+            
+            <div id="equipamentos-lista-container"></div>
+        </div>
+
+        <div class="card">
+            <div class="resultado-section">
+                <div class="resultado-titulo">Consumo Total Mensal</div>
+                <div class="resultado-valor">
+                    <div class="consumo-total" id="consumo-total">0.00 kWh</div>
+                    <div class="custo-total" id="custo-total">R$ 0,00</div>
+                </div>
+                
+                <div class="resumo-equipamentos" id="resumo-equipamentos">
+                    <!-- Resumo será inserido aqui -->
+                </div>
+
+                <div class="detalhes-consumo">
+                    <div class="detalhe-item">
+                        <div class="detalhe-label">Consumo Diário</div>
+                        <div class="detalhe-valor" id="consumo-diario">0.00 kWh</div>
+                    </div>
+                    <div class="detalhe-item">
+                        <div class="detalhe-label">Custo Diário</div>
+                        <div class="detalhe-valor" id="custo-diario">R$ 0,00</div>
+                    </div>
+                    <div class="detalhe-item">
+                        <div class="detalhe-label">Consumo Anual</div>
+                        <div class="detalhe-valor" id="consumo-anual">0.00 kWh</div>
+                    </div>
+                    <div class="detalhe-item">
+                        <div class="detalhe-label">Custo Anual</div>
+                        <div class="detalhe-valor" id="custo-anual">R$ 0,00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <div class="credits">
+                Feito por João Paulo Pompei usando Claude AI • 2026
+            </div>
+            <div class="disclaimer">
+                Os valores acima são apenas para simulação, sem nenhuma validade legal.<br>
+                Nenhuma informação deverá ser tomada como verdade nem usada como referência legal.
+            </div>
+        </footer>
+    </div>
+
+    <!-- Datalist para quantidade -->
+    <datalist id="quantidade-list">
+        <option value="1">
+        <option value="2">
+        <option value="3">
+        <option value="4">
+        <option value="5">
+        <option value="6">
+        <option value="7">
+        <option value="8">
+        <option value="9">
+    </datalist>
+
+    <script>
+        let equipamentos = [];
+        let equipamentoId = 0;
+        let equipamentoEmEdicao = null;
+        let formularioAberto = false;
+
+        // Lista de equipamentos padrão em ordem alfabética
+        const equipamentosPadrao = [
+            'Aquecedor',
+            'Bomba de água genérica (reposição, etc)',
+            'Bomba do Filtro',
+            'Chiller',
+            'Filtro UV',
+            'Luminária',
+            'Skimmer',
+            'Ventoinha Cooler',
+            'Wave Maker (bomba de circulação)'
+        ];
+
+        // Tarifas de energia por estado (valores de referência em R$/kWh)
+        // IMPORTANTE: Estes são valores de exemplo. Atualize com valores reais conforme necessário.
+        const tarifasPorEstado = {
+            'AC': 0.70,  // Acre
+            'AL': 0.71,  // Alagoas
+            'AP': 0.72,  // Amapá
+            'AM': 0.73,  // Amazonas
+            'BA': 0.74,  // Bahia
+            'CE': 0.75,  // Ceará
+            'DF': 0.76,  // Distrito Federal
+            'ES': 0.77,  // Espírito Santo
+            'GO': 0.78,  // Goiás
+            'MA': 0.79,  // Maranhão
+            'MT': 0.80,  // Mato Grosso
+            'MS': 0.81,  // Mato Grosso do Sul
+            'MG': 0.82,  // Minas Gerais
+            'PA': 0.83,  // Pará
+            'PB': 0.84,  // Paraíba
+            'PR': 0.85,  // Paraná
+            'PE': 0.86,  // Pernambuco
+            'PI': 0.87,  // Piauí
+            'RJ': 0.88,  // Rio de Janeiro
+            'RN': 0.89,  // Rio Grande do Norte
+            'RS': 0.90,  // Rio Grande do Sul
+            'RO': 0.91,  // Rondônia
+            'RR': 0.92,  // Roraima
+            'SC': 0.93,  // Santa Catarina
+            'SP': 0.94,  // São Paulo
+            'SE': 0.95,  // Sergipe
+            'TO': 0.96   // Tocantins
+        };
+
+        // Inicialização
+        window.addEventListener('DOMContentLoaded', () => {
+            renderizarLista();
+            // Atualizar tarifa quando o estado mudar
+            document.getElementById('estado').addEventListener('change', atualizarTarifaPorEstado);
+        });
+
+        function atualizarTarifaPorEstado() {
+            const estadoSelecionado = document.getElementById('estado').value;
+            if (estadoSelecionado && tarifasPorEstado[estadoSelecionado]) {
+                document.getElementById('tarifa').value = tarifasPorEstado[estadoSelecionado].toFixed(2);
+                calcularConsumo();
+            }
+        }
+
+        function mostrarFormulario() {
+            if (formularioAberto) return;
+            
+            formularioAberto = true;
+            equipamentoEmEdicao = {
+                id: equipamentoId++,
+                nome: '',
+                potencia: 0,
+                quantidade: 0,
+                horasPorDia: 0,
+                novo: true
+            };
+
+            renderizarFormulario();
+            document.getElementById('btn-adicionar').style.display = 'none';
+        }
+
+        function renderizarFormulario() {
+            const container = document.getElementById('form-container');
+            const eq = equipamentoEmEdicao;
+            
+            container.innerHTML = `
+                <div class="form-equipamento">
+                    <div class="form-equipamento-titulo">
+                        ✏️ ${eq.novo ? 'Novo Equipamento' : 'Editando: ' + eq.nome}
+                    </div>
+                    <div class="equipamento-fields">
+                        <div class="input-group">
+                            <label>Nome do Equipamento</label>
+                            <div class="input-wrapper">
+                                <input type="text" 
+                                       id="input-nome"
+                                       value="${eq.nome}" 
+                                       list="equipamentos-list"
+                                       placeholder="Digite ou selecione">
+                                <datalist id="equipamentos-list">
+                                    ${equipamentosPadrao.map(nome => `<option value="${nome}">`).join('')}
+                                </datalist>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>Potência (Watts)</label>
+                            <input type="number" 
+                                   id="input-potencia"
+                                   value="${eq.potencia || ''}" 
+                                   placeholder="Ex: 50">
+                        </div>
+                        <div class="input-group">
+                            <label>Quantidade</label>
+                            <input type="number" 
+                                   id="input-quantidade"
+                                   value="${eq.quantidade || ''}" 
+                                   list="quantidade-list"
+                                   min="1"
+                                   placeholder="1">
+                        </div>
+                        <div class="input-group">
+                            <label>Horas por Dia</label>
+                            <input type="number" 
+                                   id="input-horas"
+                                   value="${eq.horasPorDia || ''}" 
+                                   step="0.5"
+                                   placeholder="Ex: 24">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn-salvar" onclick="salvarEquipamento()">
+                            ${eq.novo ? 'Adicionar' : 'Salvar'}
+                        </button>
+                        <button class="btn-cancelar" onclick="cancelarFormulario()">Cancelar</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function salvarEquipamento() {
+            const nome = document.getElementById('input-nome').value.trim();
+            const potencia = parseFloat(document.getElementById('input-potencia').value) || 0;
+            const quantidade = parseInt(document.getElementById('input-quantidade').value) || 1;
+            const horasPorDia = parseFloat(document.getElementById('input-horas').value) || 0;
+
+            if (!nome || potencia <= 0 || horasPorDia <= 0) {
+                alert('Por favor, preencha todos os campos corretamente.');
+                return;
+            }
+
+            if (equipamentoEmEdicao.novo) {
+                equipamentos.push({
+                    id: equipamentoEmEdicao.id,
+                    nome,
+                    potencia,
+                    quantidade,
+                    horasPorDia
+                });
+            } else {
+                const index = equipamentos.findIndex(eq => eq.id === equipamentoEmEdicao.id);
+                if (index !== -1) {
+                    equipamentos[index] = {
+                        id: equipamentoEmEdicao.id,
+                        nome,
+                        potencia,
+                        quantidade,
+                        horasPorDia
+                    };
+                }
+            }
+
+            cancelarFormulario();
+            renderizarLista();
+            calcularConsumo();
+        }
+
+        function cancelarFormulario() {
+            formularioAberto = false;
+            equipamentoEmEdicao = null;
+            document.getElementById('form-container').innerHTML = '';
+            document.getElementById('btn-adicionar').style.display = 'block';
+        }
+
+        function editarEquipamento(id) {
+            const eq = equipamentos.find(e => e.id === id);
+            if (!eq) return;
+
+            equipamentoEmEdicao = { ...eq, novo: false };
+            formularioAberto = true;
+            renderizarFormulario();
+            document.getElementById('btn-adicionar').style.display = 'none';
+        }
+
+        function removerEquipamento(id) {
+            if (confirm('Deseja realmente remover este equipamento?')) {
+                equipamentos = equipamentos.filter(eq => eq.id !== id);
+                renderizarLista();
+                calcularConsumo();
+            }
+        }
+
+        function renderizarLista() {
+            const container = document.getElementById('equipamentos-lista-container');
+            
+            if (equipamentos.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="equipamento-lista-container">
+                    <div class="lista-header">
+                        <div class="lista-header-item">Equipamento</div>
+                        <div class="lista-header-item">Potência</div>
+                        <div class="lista-header-item">Quantidade</div>
+                        <div class="lista-header-item">Horas/Dia</div>
+                        <div class="lista-header-item"></div>
+                    </div>
+                    ${equipamentos.map(eq => `
+                        <div class="equipamento-item">
+                            <div class="equipamento-nome-display">${eq.nome}</div>
+                            <div class="equipamento-info">${eq.potencia}W</div>
+                            <div class="equipamento-info">${eq.quantidade}x</div>
+                            <div class="equipamento-info">${eq.horasPorDia}h</div>
+                            <button class="btn-remove" onclick="removerEquipamento(${eq.id})" title="Remover">×</button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function calcularConsumo() {
+            const tarifa = parseFloat(document.getElementById('tarifa').value) || 0;
+            
+            // Consumo diário em kWh
+            const consumoDiario = equipamentos.reduce((total, eq) => {
+                const quantidade = eq.quantidade || 1;
+                const consumo = (eq.potencia * eq.horasPorDia * quantidade) / 1000;
+                return total + consumo;
+            }, 0);
+
+            const consumoMensal = consumoDiario * 30;
+            const consumoAnual = consumoDiario * 365;
+
+            const custoDiario = consumoDiario * tarifa;
+            const custoMensal = consumoMensal * tarifa;
+            const custoAnual = consumoAnual * tarifa;
+
+            // Atualizar interface
+            document.getElementById('consumo-total').textContent = `${consumoMensal.toFixed(2)} kWh`;
+            document.getElementById('custo-total').textContent = `R$ ${custoMensal.toFixed(2)}`;
+            
+            document.getElementById('consumo-diario').textContent = `${consumoDiario.toFixed(2)} kWh`;
+            document.getElementById('custo-diario').textContent = `R$ ${custoDiario.toFixed(2)}`;
+            
+            document.getElementById('consumo-anual').textContent = `${consumoAnual.toFixed(2)} kWh`;
+            document.getElementById('custo-anual').textContent = `R$ ${custoAnual.toFixed(2)}`;
+
+            // Atualizar resumo de equipamentos
+            renderizarResumo();
+        }
+
+        function renderizarResumo() {
+            const resumoContainer = document.getElementById('resumo-equipamentos');
+            
+            if (equipamentos.length === 0) {
+                resumoContainer.innerHTML = '';
+                return;
+            }
+
+            const resumoHTML = `
+                <div class="resumo-titulo">📊 Detalhamento por Equipamento</div>
+                <div class="resumo-lista">
+                    ${equipamentos.map(eq => {
+                        const quantidade = eq.quantidade || 1;
+                        const consumoDiario = (eq.potencia * eq.horasPorDia * quantidade) / 1000;
+                        const consumoMensal = consumoDiario * 30;
+                        const quantidadeTexto = quantidade > 1 ? ` • ${quantidade}x` : '';
+                        return `
+                            <div class="resumo-item">
+                                <div class="resumo-item-nome">${eq.nome}</div>
+                                <div class="resumo-item-horas">${quantidadeTexto}${quantidadeTexto ? ' • ' : ''}${eq.horasPorDia}h/dia • ${eq.potencia}W</div>
+                                <div class="resumo-item-consumo">${consumoMensal.toFixed(2)} kWh/mês</div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+
+            resumoContainer.innerHTML = resumoHTML;
+        }
+
+        // Recalcular quando a tarifa mudar
+        document.getElementById('tarifa').addEventListener('input', calcularConsumo);
+    </script>
+</body>
+</html>
