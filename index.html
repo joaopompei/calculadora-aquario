@@ -774,7 +774,10 @@
                 <div class="counter-label">Visitantes</div>
                 <div class="counter-value">
                     <span class="counter-icon">👁️</span>
-                    <span id="visit-count">Carregando...</span>
+                    <!-- Badges do Shields.io - Funciona imediatamente sem configuração -->
+                    <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fcalculadora-aquario.vercel.app&count_bg=%2314B8A6&title_bg=%230A7EA4&icon=&icon_color=%23E7E7E7&title=visitas&edge_flat=false" 
+                         alt="Contador de Visitas" 
+                         style="vertical-align: middle;" />
                 </div>
             </div>
         </footer>
@@ -1089,34 +1092,6 @@
 
         // Recalcular quando a tarifa mudar
         document.getElementById('tarifa').addEventListener('input', calcularConsumo);
-
-        // Contador de visitas usando API gratuita
-        async function carregarContadorVisitas() {
-            try {
-                // Usando CountAPI - serviço gratuito de contador
-                // Você pode personalizar o namespace e key
-                const namespace = 'calculadora-aquario';
-                const key = 'visitas';
-                const url = `https://api.countapi.xyz/hit/${namespace}/${key}`;
-                
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                if (data.value) {
-                    document.getElementById('visit-count').textContent = data.value.toLocaleString('pt-BR');
-                } else {
-                    document.getElementById('visit-count').textContent = '---';
-                }
-            } catch (error) {
-                console.error('Erro ao carregar contador:', error);
-                document.getElementById('visit-count').textContent = '---';
-            }
-        }
-
-        // Carregar contador quando a página carregar
-        window.addEventListener('DOMContentLoaded', () => {
-            carregarContadorVisitas();
-        });
     </script>
 </body>
 </html>
