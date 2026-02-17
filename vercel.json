@@ -1,0 +1,17 @@
+{
+  "headers": [
+    {
+      "source": "/ranking-aneel.csv",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/csv"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    }
+  ]
+}
