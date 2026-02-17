@@ -132,6 +132,14 @@
             margin-top: 5px;
         }
 
+        .error-msg {
+            background: #ffcccc;
+            border: 1px solid #ff0000;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 12px;
+        }
+
         footer {
             text-align: center;
             margin-top: 30px;
@@ -169,6 +177,8 @@
 
         <div class="section">
             <h2>⚡ Tarifa de Energia</h2>
+
+            <div id="errorMsg" class="error-msg" style="display: none;"></div>
 
             <div class="input-group">
                 <label>Estado</label>
@@ -208,7 +218,7 @@
             <div class="input-group">
                 <label>Escolha a sua fornecedora de energia</label>
                 <select id="fornecedora" onchange="preencherTarifa()">
-                    <option value="">Primeiro selecione o estado</option>
+                    <option value="">Carregando fornecedoras...</option>
                 </select>
                 <p class="note">Selecione para preencher automaticamente a tarifa</p>
             </div>
@@ -268,35 +278,82 @@
             adicionarEquipamento();
         };
 
+        // Função para parsear CSV considerando campos entre aspas
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+
+            result.push(current.trim());
+            return result;
+        }
+
         // Função para carregar e processar o arquivo CSV
         async function carregarCSV() {
+            const errorMsg = document.getElementById('errorMsg');
+            const selectFornecedora = document.getElementById('fornecedora');
+
             try {
-                const response = await fetch('ranking-aneel.csv');
+                console.log('Iniciando carregamento do CSV...');
+
+                const response = await fetch('./ranking-aneel.csv');
+
+                if (!response.ok) {
+                    throw new Error(`Arquivo não encontrado. Status: ${response.status}`);
+                }
+
                 const csvText = await response.text();
+                console.log('CSV carregado. Tamanho:', csvText.length, 'caracteres');
 
                 // Processar CSV
                 const linhas = csvText.split('\n');
+                console.log('Total de linhas:', linhas.length);
 
                 // Pular a primeira linha (cabeçalho)
                 for (let i = 1; i < linhas.length; i++) {
                     const linha = linhas[i].trim();
                     if (linha) {
-                        const colunas = linha.split(',');
+                        const colunas = parseCSVLine(linha);
 
-                        dadosFornecedoras.push({
-                            distribuidora: colunas[0],
-                            uf: colunas[1],
-                            ranking: colunas[2],
-                            tarifaConvencional: colunas[3].replace(/"/g, '').replace(',', '.')
-                        });
+                        if (colunas.length >= 4) {
+                            // Remover aspas e converter vírgula para ponto na tarifa
+                            const tarifa = colunas[3].replace(/"/g, '').replace(',', '.');
+
+                            dadosFornecedoras.push({
+                                distribuidora: colunas[0].replace(/"/g, ''),
+                                uf: colunas[1].replace(/"/g, ''),
+                                ranking: colunas[2].replace(/"/g, ''),
+                                tarifaConvencional: tarifa
+                            });
+                        }
                     }
                 }
 
-                console.log('Dados carregados:', dadosFornecedoras.length + ' fornecedoras');
+                console.log('Dados processados:', dadosFornecedoras.length, 'fornecedoras');
+                console.log('Primeira fornecedora:', dadosFornecedoras[0]);
+                console.log('Última fornecedora:', dadosFornecedoras[dadosFornecedoras.length - 1]);
+
+                selectFornecedora.innerHTML = '<option value="">Primeiro selecione o estado</option>';
+                errorMsg.style.display = 'none';
 
             } catch (error) {
-                console.error('Erro ao carregar CSV:', error);
-                alert('Erro ao carregar dados das fornecedoras. Verifique se o arquivo ranking-aneel.csv está na mesma pasta.');
+                console.error('Erro detalhado ao carregar CSV:', error);
+                errorMsg.textContent = 'ERRO: Não foi possível carregar os dados das fornecedoras. Detalhes: ' + error.message;
+                errorMsg.style.display = 'block';
+                selectFornecedora.innerHTML = '<option value="">Erro ao carregar fornecedoras</option>';
             }
         }
 
@@ -305,12 +362,16 @@
             const estadoSelecionado = document.getElementById('estado').value;
             const selectFornecedora = document.getElementById('fornecedora');
 
+            console.log('Filtrando fornecedoras para estado:', estadoSelecionado);
+
             // Limpar dropdown
             selectFornecedora.innerHTML = '<option value="">Selecione a fornecedora</option>';
 
             if (estadoSelecionado) {
                 // Filtrar fornecedoras do estado selecionado
                 const fornecedorasDoEstado = dadosFornecedoras.filter(f => f.uf === estadoSelecionado);
+
+                console.log('Fornecedoras encontradas:', fornecedorasDoEstado.length);
 
                 // Ordenar por ranking
                 fornecedorasDoEstado.sort((a, b) => parseInt(a.ranking) - parseInt(b.ranking));
@@ -319,10 +380,14 @@
                 fornecedorasDoEstado.forEach(fornecedora => {
                     const option = document.createElement('option');
                     option.value = fornecedora.distribuidora;
-                    option.textContent = `${fornecedora.distribuidora} - Ranking: ${fornecedora.ranking}`;
+                    option.textContent = `${fornecedora.distribuidora} - Ranking: ${fornecedora.ranking} - R$ ${fornecedora.tarifaConvencional}`;
                     option.dataset.tarifa = fornecedora.tarifaConvencional;
                     selectFornecedora.appendChild(option);
                 });
+
+                if (fornecedorasDoEstado.length === 0) {
+                    selectFornecedora.innerHTML = '<option value="">Nenhuma fornecedora encontrada para este estado</option>';
+                }
             }
 
             // Limpar tarifa
@@ -338,6 +403,7 @@
             if (selectFornecedora.selectedIndex > 0) {
                 const opcaoSelecionada = selectFornecedora.options[selectFornecedora.selectedIndex];
                 const tarifa = opcaoSelecionada.dataset.tarifa;
+                console.log('Tarifa selecionada:', tarifa);
                 tarifaInput.value = tarifa;
                 calcular();
             } else {
