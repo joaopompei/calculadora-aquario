@@ -414,7 +414,15 @@
             </div>
         </div>
     </div>
-
+    <div class="visitor-counter">
+        <h3>👁️ Visitantes desta página</h3>
+        <p style="font-size: 24px; font-weight: bold; margin-top: 10px;">
+            <span id="contador-visitas-local">0</span>
+        </p>
+        <p style="font-size: 12px; color: #666; margin-top: 5px;">
+            Contador local (único por navegador)
+        </p>
+    </div>    
     <script>
         document.getElementById('dimensionToCalculate').addEventListener('change', function() {
             updateFixedDimensionLabels();
@@ -736,6 +744,42 @@
             ctx.fillText(`${height.toFixed(0)} cm`, offsetX - l/2 - 40, offsetY);
             ctx.fillText(`${width.toFixed(0)} cm`, offsetX + l/2 + 40, offsetY + h/2 + 30);
         }
+          // Função para contar visitas
+        function contarVisita() {
+            const paginaAtual = window.location.pathname;
+            const chaveVisitas = 'visitas_' + paginaAtual.replace(/[^a-zA-Z0-9]/g, '_');
+            const chaveUltimaVisita = 'ultima_visita_' + paginaAtual.replace(/[^a-zA-Z0-9]/g, '_');
+
+            // Pegar data atual
+            const agora = new Date().getTime();
+            const umDia = 24 * 60 * 60 * 1000; // 24 horas em millisegundos
+
+            // Pegar última visita
+            const ultimaVisita = localStorage.getItem(chaveUltimaVisita);
+
+            // Se passou mais de 24h desde a última visita, conta como nova visita
+            if (!ultimaVisita || (agora - parseInt(ultimaVisita)) > umDia) {
+                // Pegar contador atual
+                let visitas = parseInt(localStorage.getItem(chaveVisitas)) || 0;
+                visitas++;
+
+                // Salvar novo contador e timestamp
+                localStorage.setItem(chaveVisitas, visitas);
+                localStorage.setItem(chaveUltimaVisita, agora.toString());
+            }
+
+            // Retornar número de visitas
+            return parseInt(localStorage.getItem(chaveVisitas)) || 0;
+        }
+
+        // Executar contador e exibir
+        window.addEventListener('load', function() {
+            const numVisitas = contarVisita();
+            const contadorElement = document.getElementById('contador-visitas-local');
+            if (contadorElement) {
+                contadorElement.textContent = numVisitas.toLocaleString('pt-BR');
+            }
+        });
     </script>
 </body>
 </html>
