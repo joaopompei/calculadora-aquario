@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Aquário</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 15px 30px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1em;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            font-weight: bold;
+        }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input:disabled {
+            background-color: #f5f5f5;
+            cursor: not-allowed;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .results {
+            display: none;
+            margin-top: 40px;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .result-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+
+        .result-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .glass-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .glass-item strong {
+            color: #333;
+        }
+
+        canvas {
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            margin: 20px auto;
+            display: block;
+            background: white;
+        }
+
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+
+        .info p {
+            color: #1976d2;
+            margin: 5px 0;
+        }
+
+        .warning {
+            background: #fff3e0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border-left: 4px solid #ff9800;
+        }
+
+        .warning p {
+            color: #e65100;
+            margin: 0;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        .calculation-note {
+            background: #fff3cd;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid #ffc107;
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #856404;
+        }
+
+        .fixed-dimension-group {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f0f4ff;
+            border-radius: 8px;
+            border: 2px dashed #667eea;
+        }
+
+        .fixed-dimension-group.show {
+            display: block;
+        }
+
+        .fixed-two-dimensions-group {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f0fff4;
+            border-radius: 8px;
+            border: 2px dashed #10b981;
+        }
+
+        .fixed-two-dimensions-group.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐠 Calculadora de Aquário</h1>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('dimensions')">Por Dimensões</button>
+            <button class="tab" onclick="switchTab('volume')">Por Volume</button>
+        </div>
+
+        <!-- Tab: Dimensões -->
+        <div id="dimensions" class="tab-content active">
+            <div class="info">
+                <p>💡 Informe as medidas internas desejadas para o aquário</p>
+            </div>
+
+            <div class="grid-2">
+                <div class="input-group">
+                    <label>Comprimento (cm)</label>
+                    <input type="number" id="length" min="10" placeholder="Ex: 100">
+                </div>
+                <div class="input-group">
+                    <label>Profundidade (cm)</label>
+                    <input type="number" id="width" min="10" placeholder="Ex: 40">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Altura (cm)</label>
+                <input type="number" id="height" min="10" placeholder="Ex: 50">
+            </div>
+
+            <div class="input-group">
+                <label>Espessura do Vidro (mm)</label>
+                <select id="thickness">
+                    <option value="3">3mm (até 25L)</option>
+                    <option value="4">4mm (25-60L)</option>
+                    <option value="5">5mm (60-100L)</option>
+                    <option value="6" selected>6mm (100-150L)</option>
+                    <option value="8">8mm (150-250L)</option>
+                    <option value="10">10mm (250-450L)</option>
+                    <option value="12">12mm (450-750L)</option>
+                </select>
+                <div class="warning">
+                    <p>⚠️ ATENÇÃO!!! AS ESPESSURAS até 150L são seguras, acima desse volume ou 80cm de dimensão, consulte um profissional e verifique a necessidade de usar travas.</p>
+                </div>
+            </div>
+
+            <button onclick="calculateByDimensions()">Calcular Vidros</button>
+        </div>
+
+        <!-- Tab: Volume -->
+        <div id="volume" class="tab-content">
+            <div class="info">
+                <p>💡 Informe o volume desejado e escolha como calcular as dimensões</p>
+            </div>
+
+            <div class="input-group">
+                <label>Volume Desejado (Litros)</label>
+                <input type="number" id="volumeInput" min="1" placeholder="Ex: 200">
+            </div>
+
+            <div class="input-group">
+                <label>Método de Cálculo</label>
+                <select id="calculationMethod" onchange="toggleFixedDimension()">
+                    <option value="proportion">Usar Proporção Predefinida</option>
+                    <option value="fixed">Fixar Uma Dimensão</option>
+                    <option value="fixedTwo">Fixar Duas Dimensões</option>
+                </select>
+            </div>
+
+            <!-- Proportion method -->
+            <div id="proportionMethod" class="input-group">
+                <label>Proporção do Aquário</label>
+                <select id="proportion">
+                    <option value="standard">Padrão (2.5:1:1.25 - C:P:A)</option>
+                    <option value="panoramic">Panorâmico (3:1:1 - C:P:A)</option>
+                    <option value="deep">Profundo (2.5:1.25:1 - C:P:A)</option>
+                    <option value="cube">Cubo (1:1:1 - C:P:A)</option>
+                    <option value="tall">Alto (2:1:2 - C:P:A)</option>
+                </select>
+            </div>
+
+            <!-- Fixed ONE dimension method -->
+            <div id="fixedDimensionGroup" class="fixed-dimension-group">
+                <div class="input-group">
+                    <label>Dimensão a Fixar</label>
+                    <select id="fixedDimensionType">
+                        <option value="length">Comprimento</option>
+                        <option value="width">Profundidade</option>
+                        <option value="height">Altura</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Valor da Dimensão Fixa (cm)</label>
+                    <input type="number" id="fixedDimensionValue" min="10" placeholder="Ex: 50">
+                </div>
+
+                <div class="input-group">
+                    <label>Proporção das Outras Dimensões</label>
+                    <select id="remainingProportion">
+                        <option value="equal">Iguais (1:1)</option>
+                        <option value="golden">Proporção Áurea (1.618:1)</option>
+                        <option value="standard">Padrão (1.25:1)</option>
+                        <option value="wide">Largo (2:1)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Fixed TWO dimensions method -->
+            <div id="fixedTwoDimensionsGroup" class="fixed-two-dimensions-group">
+                <div class="input-group">
+                    <label>Dimensão a Calcular (será calculada automaticamente)</label>
+                    <select id="dimensionToCalculate">
+                        <option value="length">Comprimento</option>
+                        <option value="width">Profundidade</option>
+                        <option value="height">Altura</option>
+                    </select>
+                </div>
+
+                <div class="grid-2">
+                    <div class="input-group">
+                        <label id="fixed1Label">Profundidade (cm)</label>
+                        <input type="number" id="fixedDimension1" min="10" placeholder="Ex: 40">
+                    </div>
+                    <div class="input-group">
+                        <label id="fixed2Label">Altura (cm)</label>
+                        <input type="number" id="fixedDimension2" min="10" placeholder="Ex: 50">
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Espessura do Vidro (mm)</label>
+                <select id="thicknessVolume">
+                    <option value="3">3mm (até 25L)</option>
+                    <option value="4">4mm (25-60L)</option>
+                    <option value="5">5mm (60-100L)</option>
+                    <option value="6">6mm (100-150L)</option>
+                    <option value="8">8mm (150-250L)</option>
+                    <option value="10">10mm (250-450L)</option>
+                    <option value="12">12mm (450-750L)</option>
+                </select>
+                <div class="warning">
+                    <p>⚠️ ATENÇÃO!!! AS ESPESSURAS até 150L são seguras, acima desse volume ou 80cm de dimensão, consulte um profissional e verifique a necessidade de usar travas.</p>
+                </div>
+            </div>
+
+            <button onclick="calculateByVolume()">Calcular Vidros</button>
+        </div>
+
+        <!-- Resultados -->
+        <div id="results" class="results">
+            <div class="result-card">
+                <h3>📏 Medidas dos Vidros</h3>
+                <div id="glassList"></div>
+                <div class="calculation-note">
+                    <strong>📐 Método de construção:</strong> Todos os vidros se apoiam sobre a base. 
+                    A frente e o fundo têm o mesmo comprimento da base. As laterais são reduzidas 
+                    para compensar a espessura dos vidros frontal e traseiro.
+                </div>
+            </div>
+
+            <div class="result-card">
+                <h3>📊 Informações do Aquário</h3>
+                <div id="aquariumInfo"></div>
+            </div>
+
+            <div class="result-card">
+                <h3>🎨 Visualização 3D</h3>
+                <canvas id="aquariumCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Update labels when dimension to calculate changes
+        document.getElementById('dimensionToCalculate').addEventListener('change', function() {
+            updateFixedDimensionLabels();
+        });
+
+        function updateFixedDimensionLabels() {
+            const toCalculate = document.getElementById('dimensionToCalculate').value;
+            const label1 = document.getElementById('fixed1Label');
+            const label2 = document.getElementById('fixed2Label');
+
+            if (toCalculate === 'length') {
+                label1.textContent = 'Profundidade (cm)';
+                label2.textContent = 'Altura (cm)';
+            } else if (toCalculate === 'width') {
+                label1.textContent = 'Comprimento (cm)';
+                label2.textContent = 'Altura (cm)';
+            } else { // height
+                label1.textContent = 'Comprimento (cm)';
+                label2.textContent = 'Profundidade (cm)';
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+
+            document.getElementById('results').classList.remove('show');
+        }
+
+        function toggleFixedDimension() {
+            const method = document.getElementById('calculationMethod').value;
+            const proportionMethod = document.getElementById('proportionMethod');
+            const fixedDimensionGroup = document.getElementById('fixedDimensionGroup');
+            const fixedTwoDimensionsGroup = document.getElementById('fixedTwoDimensionsGroup');
+
+            proportionMethod.style.display = 'none';
+            fixedDimensionGroup.classList.remove('show');
+            fixedTwoDimensionsGroup.classList.remove('show');
+
+            if (method === 'proportion') {
+                proportionMethod.style.display = 'block';
+            } else if (method === 'fixed') {
+                fixedDimensionGroup.classList.add('show');
+            } else if (method === 'fixedTwo') {
+                fixedTwoDimensionsGroup.classList.add('show');
+                updateFixedDimensionLabels();
+            }
+        }
+
+        function calculateByDimensions() {
+            const length = parseFloat(document.getElementById('length').value);
+            const width = parseFloat(document.getElementById('width').value);
+            const height = parseFloat(document.getElementById('height').value);
+            const thickness = parseFloat(document.getElementById('thickness').value) / 10;
+
+            if (!length || !width || !height) {
+                alert('Por favor, preencha todas as medidas!');
+                return;
+            }
+
+            displayResults(length, width, height, thickness);
+        }
+
+        function calculateByVolume() {
+            const volume = parseFloat(document.getElementById('volumeInput').value);
+            const thickness = parseFloat(document.getElementById('thicknessVolume').value) / 10;
+            const method = document.getElementById('calculationMethod').value;
+
+            if (!volume) {
+                alert('Por favor, informe o volume desejado!');
+                return;
+            }
+
+            let length, width, height;
+
+            if (method === 'proportion') {
+                const proportion = document.getElementById('proportion').value;
+                let ratios;
+
+                switch(proportion) {
+                    case 'panoramic':
+                        ratios = { l: 3, w: 1, h: 1 };
+                        break;
+                    case 'deep':
+                        ratios = { l: 2.5, w: 1.25, h: 1 };
+                        break;
+                    case 'cube':
+                        ratios = { l: 1, w: 1, h: 1 };
+                        break;
+                    case 'tall':
+                        ratios = { l: 2, w: 1, h: 2 };
+                        break;
+                    default:
+                        ratios = { l: 2.5, w: 1, h: 1.25 };
+                }
+
+                const volumeCm3 = volume * 1000;
+                const totalRatio = ratios.l * ratios.w * ratios.h;
+                const baseUnit = Math.cbrt(volumeCm3 / totalRatio);
+
+                length = ratios.l * baseUnit;
+                width = ratios.w * baseUnit;
+                height = ratios.h * baseUnit;
+
+            } else if (method === 'fixed') {
+                const fixedType = document.getElementById('fixedDimensionType').value;
+                const fixedValue = parseFloat(document.getElementById('fixedDimensionValue').value);
+                const remainingProp = document.getElementById('remainingProportion').value;
+
+                if (!fixedValue) {
+                    alert('Por favor, informe o valor da dimensão fixa!');
+                    return;
+                }
+
+                let ratio;
+                switch(remainingProp) {
+                    case 'golden':
+                        ratio = 1.618;
+                        break;
+                    case 'standard':
+                        ratio = 1.25;
+                        break;
+                    case 'wide':
+                        ratio = 2;
+                        break;
+                    default:
+                        ratio = 1;
+                }
+
+                const volumeCm3 = volume * 1000;
+
+                if (fixedType === 'length') {
+                    length = fixedValue;
+                    height = Math.sqrt(volumeCm3 / (length * ratio));
+                    width = ratio * height;
+                } else if (fixedType === 'width') {
+                    width = fixedValue;
+                    height = Math.sqrt(volumeCm3 / (width * ratio));
+                    length = ratio * height;
+                } else {
+                    height = fixedValue;
+                    width = Math.sqrt(volumeCm3 / (height * ratio));
+                    length = ratio * width;
+                }
+
+            } else if (method === 'fixedTwo') {
+                const toCalculate = document.getElementById('dimensionToCalculate').value;
+                const dim1 = parseFloat(document.getElementById('fixedDimension1').value);
+                const dim2 = parseFloat(document.getElementById('fixedDimension2').value);
+
+                if (!dim1 || !dim2) {
+                    alert('Por favor, informe as duas dimensões fixas!');
+                    return;
+                }
+
+                const volumeCm3 = volume * 1000;
+
+                if (toCalculate === 'length') {
+                    width = dim1;
+                    height = dim2;
+                    length = volumeCm3 / (width * height);
+                } else if (toCalculate === 'width') {
+                    length = dim1;
+                    height = dim2;
+                    width = volumeCm3 / (length * height);
+                } else {
+                    length = dim1;
+                    width = dim2;
+                    height = volumeCm3 / (length * width);
+                }
+            }
+
+            displayResults(length, width, height, thickness);
+        }
+
+        function displayResults(length, width, height, thickness) {
+            const thicknessMm = (thickness * 10).toFixed(1);
+
+            const base = { 
+                name: 'Fundo (Base)', 
+                length: length.toFixed(1), 
+                width: width.toFixed(1) 
+            };
+
+            const frontBackHeight = (height - thickness).toFixed(1);
+            const frontBack = { 
+                name: 'Frente e Trás (2 peças)', 
+                length: length.toFixed(1), 
+                width: frontBackHeight 
+            };
+
+            const sideLength = (width - 2 * thickness).toFixed(1);
+            const sideHeight = (height - thickness).toFixed(1);
+            const sides = { 
+                name: 'Laterais (2 peças)', 
+                length: sideLength, 
+                width: sideHeight 
+            };
+
+            const volumeLiters = (length * width * height / 1000).toFixed(1);
+
+            const glassList = document.getElementById('glassList');
+            glassList.innerHTML = `
+                <div class="glass-item">
+                    <strong>${base.name}:</strong> ${base.length} cm × ${base.width} cm
+                </div>
+                <div class="glass-item">
+                    <strong>${frontBack.name}:</strong> ${frontBack.length} cm × ${frontBack.width} cm (cada)
+                    <div style="font-size: 0.85em; color: #666; margin-top: 5px;">
+                        Altura reduzida em ${thicknessMm}mm (espessura da base)
+                    </div>
+                </div>
+                <div class="glass-item">
+                    <strong>${sides.name}:</strong> ${sides.length} cm × ${sides.width} cm (cada)
+                    <div style="font-size: 0.85em; color: #666; margin-top: 5px;">
+                        Profundidade reduzida em ${(thickness * 2 * 10).toFixed(1)}mm (2× espessura dos vidros frontal/traseiro)<br>
+                        Altura reduzida em ${thicknessMm}mm (espessura da base)
+                    </div>
+                </div>
+            `;
+
+            const aquariumInfo = document.getElementById('aquariumInfo');
+            aquariumInfo.innerHTML = `
+                <div class="glass-item">
+                    <strong>Dimensões internas:</strong> ${length.toFixed(1)} × ${width.toFixed(1)} × ${height.toFixed(1)} cm (C × P × A)
+                </div>
+                <div class="glass-item">
+                    <strong>Volume aproximado:</strong> ${volumeLiters} litros
+                </div>
+                <div class="glass-item">
+                    <strong>Espessura do vidro:</strong> ${thicknessMm} mm
+                </div>
+                <div class="glass-item">
+                    <strong>Total de vidros:</strong> 5 peças (1 base + 2 frente/trás + 2 laterais)
+                </div>
+            `;
+
+            draw3DAquarium(length, width, height, thickness);
+            document.getElementById('results').classList.add('show');
+        }
+
+        function draw3DAquarium(length, width, height, thickness) {
+            const canvas = document.getElementById('aquariumCanvas');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = 600;
+            canvas.height = 400;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const maxDim = Math.max(length, width, height);
+            const scale = 200 / maxDim;
+
+            const offsetX = 250;
+            const offsetY = 200;
+            const angle = Math.PI / 6;
+
+            const l = length * scale;
+            const w = width * scale;
+            const h = height * scale;
+
+            function draw3DBox(x, y, width, height, depth, color, alpha = 0.7) {
+                ctx.save();
+                ctx.globalAlpha = alpha;
+
+                ctx.fillStyle = color;
+                ctx.fillRect(x, y, width, height);
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x, y, width, height);
+
+                ctx.fillStyle = adjustBrightness(color, 20);
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + depth * Math.cos(angle), y - depth * Math.sin(angle));
+                ctx.lineTo(x + width + depth * Math.cos(angle), y - depth * Math.sin(angle));
+                ctx.lineTo(x + width, y);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = adjustBrightness(color, -20);
+                ctx.beginPath();
+                ctx.moveTo(x + width, y);
+                ctx.lineTo(x + width + depth * Math.cos(angle), y - depth * Math.sin(angle));
+                ctx.lineTo(x + width + depth * Math.cos(angle), y + height - depth * Math.sin(angle));
+                ctx.lineTo(x + width, y + height);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+            function adjustBrightness(color, percent) {
+                const num = parseInt(color.replace("#",""), 16);
+                const amt = Math.round(2.55 * percent);
+                const R = (num >> 16) + amt;
+                const G = (num >> 8 & 0x00FF) + amt;
+                const B = (num & 0x0000FF) + amt;
+                return "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 +
+                    (G<255?G<1?0:G:255)*0x100 + (B<255?B<1?0:B:255))
+                    .toString(16).slice(1);
+            }
+
+            draw3DBox(offsetX - l/2, offsetY - h/2, l, h, w, '#4FC3F7', 0.3);
+
+            ctx.fillStyle = 'rgba(33, 150, 243, 0.2)';
+            ctx.fillRect(offsetX - l/2 + 5, offsetY - h/2 + 5, l - 10, h * 0.9);
+
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+
+            // Comprimento (embaixo)
+            ctx.fillText(`${length.toFixed(0)} cm`, offsetX, offsetY + h/2 + 30);
+
+            // Altura (esquerda)
+            ctx.fillText(`${height.toFixed(0)} cm`, offsetX - l/2 - 40, offsetY);
+
+            // Profundidade (direita embaixo) - POSIÇÃO ALTERADA
+            ctx.fillText(`${width.toFixed(0)} cm`, offsetX + l/2 + 40, offsetY + h/2 + 30);
+        }
+    </script>
+</body>
+</html>
