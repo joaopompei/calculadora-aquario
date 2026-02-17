@@ -262,8 +262,13 @@
             <p>Nenhuma informação deverá ser tomada como verdade nem usada como referência legal.</p>
 
             <div class="visitor-counter">
-                <h3>👁️ Visitantes</h3>
-                <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fcalculadora-aquario.vercel.app&count_bg=%2314B8A6&title_bg=%230A7EA4&icon=&icon_color=%23E7E7E7&title=visitas&edge_flat=false" alt="Contador de Visitas">
+                <h3>👁️ Visitantes desta página</h3>
+                <p style="font-size: 24px; font-weight: bold; margin-top: 10px;">
+                    <span id="contador-visitas-local">0</span>
+                </p>
+                <p style="font-size: 12px; color: #666; margin-top: 5px;">
+                    Contador local (único por navegador)
+                </p>
             </div>
         </footer>
     </div>
@@ -491,6 +496,42 @@
             document.getElementById('consumoAnual').textContent = consumoAnualTotal.toFixed(2) + ' kWh';
             document.getElementById('custoAnual').textContent = 'R$ ' + custoAnual.toFixed(2).replace('.', ',');
         }
+        // Função para contar visitas
+        function contarVisita() {
+            const paginaAtual = window.location.pathname;
+            const chaveVisitas = 'visitas_' + paginaAtual.replace(/[^a-zA-Z0-9]/g, '_');
+            const chaveUltimaVisita = 'ultima_visita_' + paginaAtual.replace(/[^a-zA-Z0-9]/g, '_');
+
+            // Pegar data atual
+            const agora = new Date().getTime();
+            const umDia = 24 * 60 * 60 * 1000; // 24 horas em millisegundos
+
+            // Pegar última visita
+            const ultimaVisita = localStorage.getItem(chaveUltimaVisita);
+
+            // Se passou mais de 24h desde a última visita, conta como nova visita
+            if (!ultimaVisita || (agora - parseInt(ultimaVisita)) > umDia) {
+                // Pegar contador atual
+                let visitas = parseInt(localStorage.getItem(chaveVisitas)) || 0;
+                visitas++;
+
+                // Salvar novo contador e timestamp
+                localStorage.setItem(chaveVisitas, visitas);
+                localStorage.setItem(chaveUltimaVisita, agora.toString());
+            }
+
+            // Retornar número de visitas
+            return parseInt(localStorage.getItem(chaveVisitas)) || 0;
+        }
+
+        // Executar contador e exibir
+        window.addEventListener('load', function() {
+            const numVisitas = contarVisita();
+            const contadorElement = document.getElementById('contador-visitas-local');
+            if (contadorElement) {
+                contadorElement.textContent = numVisitas.toLocaleString('pt-BR');
+            }
+        });
     </script>
 </body>
 </html>
