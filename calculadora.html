@@ -172,52 +172,50 @@
 
             <div class="input-group">
                 <label>Estado</label>
-                <select id="estado">
+                <select id="estado" onchange="filtrarFornecedoras()">
                     <option value="">Selecione seu estado</option>
-                    <option value="0.88">Acre (AC)</option>
-                    <option value="0.77">Alagoas (AL)</option>
-                    <option value="0.85">Amapá (AP)</option>
-                    <option value="0.91">Amazonas (AM)</option>
-                    <option value="0.79">Bahia (BA)</option>
-                    <option value="0.82">Ceará (CE)</option>
-                    <option value="0.75">Distrito Federal (DF)</option>
-                    <option value="0.73">Espírito Santo (ES)</option>
-                    <option value="0.81">Goiás (GO)</option>
-                    <option value="0.86">Maranhão (MA)</option>
-                    <option value="0.78">Mato Grosso (MT)</option>
-                    <option value="0.76">Mato Grosso do Sul (MS)</option>
-                    <option value="0.80">Minas Gerais (MG)</option>
-                    <option value="0.89">Pará (PA)</option>
-                    <option value="0.84">Paraíba (PB)</option>
-                    <option value="0.72">Paraná (PR)</option>
-                    <option value="0.83">Pernambuco (PE)</option>
-                    <option value="0.87">Piauí (PI)</option>
-                    <option value="0.90">Rio de Janeiro (RJ)</option>
-                    <option value="0.85">Rio Grande do Norte (RN)</option>
-                    <option value="0.74">Rio Grande do Sul (RS)</option>
-                    <option value="0.92">Rondônia (RO)</option>
-                    <option value="0.93">Roraima (RR)</option>
-                    <option value="0.71">Santa Catarina (SC)</option>
-                    <option value="0.70">São Paulo (SP)</option>
-                    <option value="0.82">Sergipe (SE)</option>
-                    <option value="0.88">Tocantins (TO)</option>
+                    <option value="AC">Acre (AC)</option>
+                    <option value="AL">Alagoas (AL)</option>
+                    <option value="AP">Amapá (AP)</option>
+                    <option value="AM">Amazonas (AM)</option>
+                    <option value="BA">Bahia (BA)</option>
+                    <option value="CE">Ceará (CE)</option>
+                    <option value="DF">Distrito Federal (DF)</option>
+                    <option value="ES">Espírito Santo (ES)</option>
+                    <option value="GO">Goiás (GO)</option>
+                    <option value="MA">Maranhão (MA)</option>
+                    <option value="MT">Mato Grosso (MT)</option>
+                    <option value="MS">Mato Grosso do Sul (MS)</option>
+                    <option value="MG">Minas Gerais (MG)</option>
+                    <option value="PA">Pará (PA)</option>
+                    <option value="PB">Paraíba (PB)</option>
+                    <option value="PR">Paraná (PR)</option>
+                    <option value="PE">Pernambuco (PE)</option>
+                    <option value="PI">Piauí (PI)</option>
+                    <option value="RJ">Rio de Janeiro (RJ)</option>
+                    <option value="RN">Rio Grande do Norte (RN)</option>
+                    <option value="RS">Rio Grande do Sul (RS)</option>
+                    <option value="RO">Rondônia (RO)</option>
+                    <option value="RR">Roraima (RR)</option>
+                    <option value="SC">Santa Catarina (SC)</option>
+                    <option value="SP">São Paulo (SP)</option>
+                    <option value="SE">Sergipe (SE)</option>
+                    <option value="TO">Tocantins (TO)</option>
                 </select>
-                <p class="note">Selecione para preencher automaticamente</p>
+                <p class="note">Selecione o estado para filtrar as fornecedoras</p>
             </div>
 
             <div class="input-group">
                 <label>Escolha a sua fornecedora de energia</label>
-                <select id="fornecedora">
-                    <option value="">Selecione a fornecedora</option>
-                    <option value="cpfl">CPFL</option>
-                    <option value="enel">Enel</option>
-                    <option value="light">Light</option>
+                <select id="fornecedora" onchange="preencherTarifa()">
+                    <option value="">Primeiro selecione o estado</option>
                 </select>
+                <p class="note">Selecione para preencher automaticamente a tarifa</p>
             </div>
 
             <div class="input-group">
                 <label>Valor do kWh (R$)</label>
-                <input type="number" id="tarifa" step="0.01" placeholder="0.00">
+                <input type="number" id="tarifa" step="0.001" placeholder="0.000">
                 <p class="note">Você pode editar manualmente</p>
             </div>
         </div>
@@ -262,14 +260,91 @@
 
     <script>
         let equipamentoId = 0;
+        let dadosFornecedoras = [];
 
-        document.getElementById('estado').addEventListener('change', function() {
-            const tarifa = this.value;
-            if (tarifa) {
-                document.getElementById('tarifa').value = tarifa;
+        // Carregar arquivo CSV ao iniciar a página
+        window.onload = function() {
+            carregarCSV();
+            adicionarEquipamento();
+        };
+
+        // Função para carregar e processar o arquivo CSV
+        async function carregarCSV() {
+            try {
+                const response = await fetch('ranking-aneel.csv');
+                const csvText = await response.text();
+
+                // Processar CSV
+                const linhas = csvText.split('\n');
+
+                // Pular a primeira linha (cabeçalho)
+                for (let i = 1; i < linhas.length; i++) {
+                    const linha = linhas[i].trim();
+                    if (linha) {
+                        const colunas = linha.split(',');
+
+                        dadosFornecedoras.push({
+                            distribuidora: colunas[0],
+                            uf: colunas[1],
+                            ranking: colunas[2],
+                            tarifaConvencional: colunas[3].replace(/"/g, '').replace(',', '.')
+                        });
+                    }
+                }
+
+                console.log('Dados carregados:', dadosFornecedoras.length + ' fornecedoras');
+
+            } catch (error) {
+                console.error('Erro ao carregar CSV:', error);
+                alert('Erro ao carregar dados das fornecedoras. Verifique se o arquivo ranking-aneel.csv está na mesma pasta.');
+            }
+        }
+
+        // Filtrar fornecedoras por estado
+        function filtrarFornecedoras() {
+            const estadoSelecionado = document.getElementById('estado').value;
+            const selectFornecedora = document.getElementById('fornecedora');
+
+            // Limpar dropdown
+            selectFornecedora.innerHTML = '<option value="">Selecione a fornecedora</option>';
+
+            if (estadoSelecionado) {
+                // Filtrar fornecedoras do estado selecionado
+                const fornecedorasDoEstado = dadosFornecedoras.filter(f => f.uf === estadoSelecionado);
+
+                // Ordenar por ranking
+                fornecedorasDoEstado.sort((a, b) => parseInt(a.ranking) - parseInt(b.ranking));
+
+                // Adicionar opções ao select
+                fornecedorasDoEstado.forEach(fornecedora => {
+                    const option = document.createElement('option');
+                    option.value = fornecedora.distribuidora;
+                    option.textContent = `${fornecedora.distribuidora} - Ranking: ${fornecedora.ranking}`;
+                    option.dataset.tarifa = fornecedora.tarifaConvencional;
+                    selectFornecedora.appendChild(option);
+                });
+            }
+
+            // Limpar tarifa
+            document.getElementById('tarifa').value = '';
+            calcular();
+        }
+
+        // Preencher tarifa automaticamente
+        function preencherTarifa() {
+            const selectFornecedora = document.getElementById('fornecedora');
+            const tarifaInput = document.getElementById('tarifa');
+
+            if (selectFornecedora.selectedIndex > 0) {
+                const opcaoSelecionada = selectFornecedora.options[selectFornecedora.selectedIndex];
+                const tarifa = opcaoSelecionada.dataset.tarifa;
+                tarifaInput.value = tarifa;
+                calcular();
+            } else {
+                tarifaInput.value = '';
                 calcular();
             }
-        });
+        }
 
         document.getElementById('tarifa').addEventListener('input', calcular);
 
@@ -331,8 +406,6 @@
             document.getElementById('consumoAnual').textContent = consumoAnualTotal.toFixed(2) + ' kWh';
             document.getElementById('custoAnual').textContent = 'R$ ' + custoAnual.toFixed(2).replace('.', ',');
         }
-
-        adicionarEquipamento();
     </script>
 </body>
 </html>
