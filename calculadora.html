@@ -1,11 +1,537 @@
-<div class="container">
-    <!-- Other contents of the container div -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Consumo - Aquário</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    <!-- Existing Footer -->
-    <footer>
-        <!-- Footer content here -->
-        <div class="visitor-counter">
-            <!-- Visitor counter content here -->
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #ffffff;
+            color: #000000;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .section {
+            padding: 20px 0;
+            border-bottom: 1px solid #000000;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #000000;
+        }
+
+        h2 {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #000000;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #000000;
+            background: #ffffff;
+            color: #000000;
+            font-size: 14px;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: 2px solid #000000;
+            outline-offset: 2px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #000000;
+            color: #ffffff;
+            border: 1px solid #000000;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        button:hover {
+            background: #ffffff;
+            color: #000000;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .equipment-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #cccccc;
+        }
+
+        .equipment-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-box {
+            padding: 15px;
+            border: 1px solid #000000;
+            margin-bottom: 15px;
+        }
+
+        .result-box h3 {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .result-value {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .note {
+            font-size: 12px;
+            color: #000000;
+            margin-top: 5px;
+        }
+
+        .error-msg {
+            background: #ffcccc;
+            border: 1px solid #ff0000;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 12px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #000000;
+            font-size: 12px;
+        }
+
+        .visitor-counter {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #cccccc;
+        }
+
+        .visitor-counter h3 {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="section">
+            <h1>🐠 Calculadora de Consumo - Aquário</h1>
+            <p>Calcule o gasto de energia dos equipamentos do seu aquário</p>
         </div>
-    </footer>
-</div>
+
+        <div class="section">
+            <h2>⚡ Tarifa de Energia</h2>
+
+            <div id="errorMsg" class="error-msg" style="display: none;"></div>
+
+            <div class="input-group">
+                <label>Estado</label>
+                <select id="estado" onchange="filtrarFornecedoras()">
+                    <option value="">Selecione seu estado</option>
+                    <option value="AC">Acre (AC)</option>
+                    <option value="AL">Alagoas (AL)</option>
+                    <option value="AP">Amapá (AP)</option>
+                    <option value="AM">Amazonas (AM)</option>
+                    <option value="BA">Bahia (BA)</option>
+                    <option value="CE">Ceará (CE)</option>
+                    <option value="DF">Distrito Federal (DF)</option>
+                    <option value="ES">Espírito Santo (ES)</option>
+                    <option value="GO">Goiás (GO)</option>
+                    <option value="MA">Maranhão (MA)</option>
+                    <option value="MT">Mato Grosso (MT)</option>
+                    <option value="MS">Mato Grosso do Sul (MS)</option>
+                    <option value="MG">Minas Gerais (MG)</option>
+                    <option value="PA">Pará (PA)</option>
+                    <option value="PB">Paraíba (PB)</option>
+                    <option value="PR">Paraná (PR)</option>
+                    <option value="PE">Pernambuco (PE)</option>
+                    <option value="PI">Piauí (PI)</option>
+                    <option value="RJ">Rio de Janeiro (RJ)</option>
+                    <option value="RN">Rio Grande do Norte (RN)</option>
+                    <option value="RS">Rio Grande do Sul (RS)</option>
+                    <option value="RO">Rondônia (RO)</option>
+                    <option value="RR">Roraima (RR)</option>
+                    <option value="SC">Santa Catarina (SC)</option>
+                    <option value="SP">São Paulo (SP)</option>
+                    <option value="SE">Sergipe (SE)</option>
+                    <option value="TO">Tocantins (TO)</option>
+                </select>
+                <p class="note">Selecione o estado para filtrar as fornecedoras</p>
+            </div>
+
+            <div class="input-group">
+                <label>Escolha a sua fornecedora de energia</label>
+                <select id="fornecedora" onchange="preencherTarifa()">
+                    <option value="">Carregando fornecedoras...</option>
+                </select>
+                <p class="note">Selecione para preencher automaticamente a tarifa</p>
+            </div>
+
+            <div class="input-group">
+                <label>Valor do kWh (R$)</label>
+                <input type="number" id="tarifa" step="0.001" placeholder="0.000">
+                <p class="note">Você pode editar manualmente</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔌 Equipamentos</h2>
+            <div id="equipamentos"></div>
+            <button onclick="adicionarEquipamento()">+ Adicionar Equipamento</button>
+        </div>
+
+        <div class="section">
+            <div class="result-box">
+                <h3>Consumo Total Mensal</h3>
+                <div class="result-value" id="consumoMensal">0.00 kWh</div>
+                <div class="result-value" id="custoMensal">R$ 0,00</div>
+            </div>
+
+            <div class="result-box">
+                <h3>Consumo Diário</h3>
+                <div class="result-value" id="consumoDiario">0.00 kWh</div>
+                <div class="result-value" id="custoDiario">R$ 0,00</div>
+            </div>
+
+            <div class="result-box">
+                <h3>Consumo Anual</h3>
+                <div class="result-value" id="consumoAnual">0.00 kWh</div>
+                <div class="result-value" id="custoAnual">R$ 0,00</div>
+            </div>
+        </div>
+
+        <footer>
+            <p><strong>Feito por João Paulo Pompei usando Claude AI • 2026</strong></p>
+            <p>Os valores acima são apenas para simulação, sem nenhuma validade legal.</p>
+            <p>Nenhuma informação deverá ser tomada como verdade nem usada como referência legal.</p>
+
+            <div class="visitor-counter">
+                <h3>👁️ Visitantes desta página</h3>
+                <p style="font-size: 24px; font-weight: bold; margin-top: 10px;">
+                    <span id="contador-visitas-local">0</span>
+                </p>
+                <p style="font-size: 12px; color: #666; margin-top: 5px;">
+                    Contador local (único por navegador)
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        let equipamentoId = 0;
+        let dadosFornecedoras = [];
+
+        window.onload = function() {
+            carregarCSV();
+            adicionarEquipamento();
+        };
+
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+
+            result.push(current.trim());
+            return result;
+        }
+
+        async function carregarCSV() {
+            const errorMsg = document.getElementById('errorMsg');
+            const selectFornecedora = document.getElementById('fornecedora');
+
+            try {
+                console.log('Iniciando carregamento do CSV...');
+
+                const response = await fetch('./ranking-aneel.csv');
+
+                if (!response.ok) {
+                    throw new Error(`Arquivo não encontrado. Status: ${response.status}`);
+                }
+
+                const csvText = await response.text();
+                console.log('CSV carregado. Tamanho:', csvText.length, 'caracteres');
+
+                const linhas = csvText.split('\n');
+                console.log('Total de linhas:', linhas.length);
+
+                for (let i = 1; i < linhas.length; i++) {
+                    const linha = linhas[i].trim();
+                    if (linha) {
+                        const colunas = parseCSVLine(linha);
+
+                        if (colunas.length >= 4) {
+                            const tarifa = colunas[3].replace(/"/g, '').replace(',', '.');
+
+                            dadosFornecedoras.push({
+                                distribuidora: colunas[0].replace(/"/g, ''),
+                                uf: colunas[1].replace(/"/g, ''),
+                                ranking: colunas[2].replace(/"/g, ''),
+                                tarifaConvencional: tarifa
+                            });
+                        }
+                    }
+                }
+
+                console.log('✅ Dados processados:', dadosFornecedoras.length, 'fornecedoras');
+                console.log('📊 Primeira fornecedora:', dadosFornecedoras[0]);
+
+                selectFornecedora.innerHTML = '<option value="">Primeiro selecione o estado</option>';
+                errorMsg.style.display = 'none';
+
+            } catch (error) {
+                console.error('❌ Erro detalhado ao carregar CSV:', error);
+                errorMsg.textContent = 'ERRO: Não foi possível carregar os dados das fornecedoras. Detalhes: ' + error.message;
+                errorMsg.style.display = 'block';
+                selectFornecedora.innerHTML = '<option value="">Erro ao carregar fornecedoras</option>';
+            }
+        }
+
+        function filtrarFornecedoras() {
+            const estadoSelecionado = document.getElementById('estado').value;
+            const selectFornecedora = document.getElementById('fornecedora');
+
+            console.log('🔍 Filtrando fornecedoras para estado:', estadoSelecionado);
+
+            selectFornecedora.innerHTML = '<option value="">Selecione a fornecedora</option>';
+
+            if (estadoSelecionado) {
+                const fornecedorasDoEstado = dadosFornecedoras.filter(f => f.uf === estadoSelecionado);
+
+                console.log('📋 Fornecedoras encontradas:', fornecedorasDoEstado.length);
+
+                fornecedorasDoEstado.sort((a, b) => parseInt(a.ranking) - parseInt(b.ranking));
+
+                fornecedorasDoEstado.forEach(fornecedora => {
+                    const option = document.createElement('option');
+                    option.value = JSON.stringify(fornecedora);
+                    option.textContent = `${fornecedora.distribuidora} - Ranking: ${fornecedora.ranking} - R$ ${fornecedora.tarifaConvencional}`;
+                    selectFornecedora.appendChild(option);
+
+                    console.log('➕ Adicionada:', fornecedora.distribuidora, '- Tarifa:', fornecedora.tarifaConvencional);
+                });
+
+                if (fornecedorasDoEstado.length === 0) {
+                    selectFornecedora.innerHTML = '<option value="">Nenhuma fornecedora encontrada para este estado</option>';
+                }
+            }
+
+            document.getElementById('tarifa').value = '';
+            calcular();
+        }
+
+        function preencherTarifa() {
+            const selectFornecedora = document.getElementById('fornecedora');
+            const tarifaInput = document.getElementById('tarifa');
+
+            console.log('💡 Função preencherTarifa() chamada');
+            console.log('   selectedIndex:', selectFornecedora.selectedIndex);
+
+            if (selectFornecedora.selectedIndex > 0) {
+                const opcaoSelecionada = selectFornecedora.options[selectFornecedora.selectedIndex];
+                const valorOption = opcaoSelecionada.value;
+
+                console.log('   Valor da option:', valorOption);
+
+                try {
+                    const fornecedora = JSON.parse(valorOption);
+                    const tarifa = fornecedora.tarifaConvencional;
+
+                    console.log('   Objeto fornecedora:', fornecedora);
+                    console.log('   Tarifa extraída:', tarifa);
+                    console.log('   Tipo da tarifa:', typeof tarifa);
+
+                    tarifaInput.value = tarifa;
+
+                    console.log('✅ Tarifa preenchida no input:', tarifaInput.value);
+
+                    calcular();
+                } catch (e) {
+                    console.error('❌ Erro ao parsear JSON:', e);
+                }
+            } else {
+                console.log('⚠️ Nenhuma fornecedora selecionada (index = 0)');
+                tarifaInput.value = '';
+                calcular();
+            }
+        }
+
+        document.getElementById('tarifa').addEventListener('input', function() {
+            console.log('📝 Tarifa editada manualmente:', this.value);
+            calcular();
+        });
+
+        function adicionarEquipamento() {
+            equipamentoId++;
+            const div = document.createElement('div');
+            div.className = 'equipment-item';
+            div.id = 'eq-' + equipamentoId;
+            div.innerHTML = `
+                <div class="input-group">
+                    <label>Nome do Equipamento</label>
+                    <input type="text" placeholder="Ex: Filtro, Aquecedor">
+                </div>
+                <div class="grid-2">
+                    <div class="input-group">
+                        <label>Potência (W)</label>
+                        <input type="number" class="potencia" step="1" placeholder="0" onchange="calcular()">
+                    </div>
+                    <div class="input-group">
+                        <label>Horas/dia</label>
+                        <input type="number" class="horas" step="0.1" placeholder="0" onchange="calcular()">
+                    </div>
+                </div>
+                <button onclick="removerEquipamento(${equipamentoId})">Remover</button>
+            `;
+            document.getElementById('equipamentos').appendChild(div);
+        }
+
+        function removerEquipamento(id) {
+            document.getElementById('eq-' + id).remove();
+            calcular();
+        }
+
+        function calcular() {
+            const tarifaInput = document.getElementById('tarifa');
+            const tarifa = parseFloat(tarifaInput.value) || 0;
+
+            console.log('🧮 Calculando...');
+            console.log('   Valor do input tarifa:', tarifaInput.value);
+            console.log('   Tarifa convertida (float):', tarifa);
+
+            let consumoMensalTotal = 0;
+
+            document.querySelectorAll('.equipment-item').forEach(eq => {
+                const potencia = parseFloat(eq.querySelector('.potencia').value) || 0;
+                const horas = parseFloat(eq.querySelector('.horas').value) || 0;
+                const consumoDiario = (potencia * horas) / 1000;
+                const consumoMensal = consumoDiario * 30;
+                consumoMensalTotal += consumoMensal;
+            });
+
+            const consumoDiarioTotal = consumoMensalTotal / 30;
+            const consumoAnualTotal = consumoMensalTotal * 12;
+
+            const custoMensal = consumoMensalTotal * tarifa;
+            const custoDiario = consumoDiarioTotal * tarifa;
+            const custoAnual = consumoAnualTotal * tarifa;
+
+            console.log('   Consumo mensal:', consumoMensalTotal.toFixed(2), 'kWh');
+            console.log('   Custo mensal: R$', custoMensal.toFixed(2));
+
+            document.getElementById('consumoMensal').textContent = consumoMensalTotal.toFixed(2) + ' kWh';
+            document.getElementById('custoMensal').textContent = 'R$ ' + custoMensal.toFixed(2).replace('.', ',');
+
+            document.getElementById('consumoDiario').textContent = consumoDiarioTotal.toFixed(2) + ' kWh';
+            document.getElementById('custoDiario').textContent = 'R$ ' + custoDiario.toFixed(2).replace('.', ',');
+
+            document.getElementById('consumoAnual').textContent = consumoAnualTotal.toFixed(2) + ' kWh';
+            document.getElementById('custoAnual').textContent = 'R$ ' + custoAnual.toFixed(2).replace('.', ',');
+        }
+        // Função para contar visitas
+        function contarVisita() {
+            const paginaAtual = window.location.pathname;
+            const chaveVisitas = 'visitas_' + paginaAtual.replace(/[^a-zA-Z0-9]/g, '_');
+            const chaveUltimaVisita = 'ultima_visita_' + paginaAtual.replace(/[^a-zA-Z0-9]/g, '_');
+
+            // Pegar data atual
+            const agora = new Date().getTime();
+            const umDia = 24 * 60 * 60 * 1000; // 24 horas em millisegundos
+
+            // Pegar última visita
+            const ultimaVisita = localStorage.getItem(chaveUltimaVisita);
+
+            // Se passou mais de 24h desde a última visita, conta como nova visita
+            if (!ultimaVisita || (agora - parseInt(ultimaVisita)) > umDia) {
+                // Pegar contador atual
+                let visitas = parseInt(localStorage.getItem(chaveVisitas)) || 0;
+                visitas++;
+
+                // Salvar novo contador e timestamp
+                localStorage.setItem(chaveVisitas, visitas);
+                localStorage.setItem(chaveUltimaVisita, agora.toString());
+            }
+
+            // Retornar número de visitas
+            return parseInt(localStorage.getItem(chaveVisitas)) || 0;
+        }
+
+        // Executar contador e exibir
+        window.addEventListener('load', function() {
+            const numVisitas = contarVisita();
+            const contadorElement = document.getElementById('contador-visitas-local');
+            if (contadorElement) {
+                contadorElement.textContent = numVisitas.toLocaleString('pt-BR');
+            }
+        });
+    </script>
+</body>
+</html>
