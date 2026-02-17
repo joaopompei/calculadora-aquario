@@ -269,16 +269,14 @@
     </div>
 
     <script>
-  let equipamentoId = 0;
+        let equipamentoId = 0;
         let dadosFornecedoras = [];
 
-        // Carregar arquivo CSV ao iniciar a página
         window.onload = function() {
             carregarCSV();
             adicionarEquipamento();
         };
 
-        // Função para parsear CSV considerando campos entre aspas
         function parseCSVLine(line) {
             const result = [];
             let current = '';
@@ -301,7 +299,6 @@
             return result;
         }
 
-        // Função para carregar e processar o arquivo CSV
         async function carregarCSV() {
             const errorMsg = document.getElementById('errorMsg');
             const selectFornecedora = document.getElementById('fornecedora');
@@ -318,18 +315,15 @@
                 const csvText = await response.text();
                 console.log('CSV carregado. Tamanho:', csvText.length, 'caracteres');
 
-                // Processar CSV
                 const linhas = csvText.split('\n');
                 console.log('Total de linhas:', linhas.length);
 
-                // Pular a primeira linha (cabeçalho)
                 for (let i = 1; i < linhas.length; i++) {
                     const linha = linhas[i].trim();
                     if (linha) {
                         const colunas = parseCSVLine(linha);
 
                         if (colunas.length >= 4) {
-                            // Remover aspas e converter vírgula para ponto na tarifa
                             const tarifa = colunas[3].replace(/"/g, '').replace(',', '.');
 
                             dadosFornecedoras.push({
@@ -356,29 +350,24 @@
             }
         }
 
-        // Filtrar fornecedoras por estado
         function filtrarFornecedoras() {
             const estadoSelecionado = document.getElementById('estado').value;
             const selectFornecedora = document.getElementById('fornecedora');
 
             console.log('🔍 Filtrando fornecedoras para estado:', estadoSelecionado);
 
-            // Limpar dropdown
             selectFornecedora.innerHTML = '<option value="">Selecione a fornecedora</option>';
 
             if (estadoSelecionado) {
-                // Filtrar fornecedoras do estado selecionado
                 const fornecedorasDoEstado = dadosFornecedoras.filter(f => f.uf === estadoSelecionado);
 
                 console.log('📋 Fornecedoras encontradas:', fornecedorasDoEstado.length);
 
-                // Ordenar por ranking
                 fornecedorasDoEstado.sort((a, b) => parseInt(a.ranking) - parseInt(b.ranking));
 
-                // Adicionar opções ao select
                 fornecedorasDoEstado.forEach(fornecedora => {
                     const option = document.createElement('option');
-                    option.value = JSON.stringify(fornecedora); // Guardar objeto completo
+                    option.value = JSON.stringify(fornecedora);
                     option.textContent = `${fornecedora.distribuidora} - Ranking: ${fornecedora.ranking} - R$ ${fornecedora.tarifaConvencional}`;
                     selectFornecedora.appendChild(option);
 
@@ -390,12 +379,10 @@
                 }
             }
 
-            // Limpar tarifa
             document.getElementById('tarifa').value = '';
             calcular();
         }
 
-        // Preencher tarifa automaticamente
         function preencherTarifa() {
             const selectFornecedora = document.getElementById('fornecedora');
             const tarifaInput = document.getElementById('tarifa');
@@ -504,5 +491,6 @@
             document.getElementById('consumoAnual').textContent = consumoAnualTotal.toFixed(2) + ' kWh';
             document.getElementById('custoAnual').textContent = 'R$ ' + custoAnual.toFixed(2).replace('.', ',');
         }
+    </script>
 </body>
 </html>
