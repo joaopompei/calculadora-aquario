@@ -140,6 +140,19 @@
             font-size: 12px;
         }
 
+        .visitor-counter {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #cccccc;
+        }
+
+        .visitor-counter h3 {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
         @media (max-width: 768px) {
             .grid-2 {
                 grid-template-columns: 1fr;
@@ -150,7 +163,6 @@
 <body>
     <div class="container">
         <div class="section">
-             <a href="index.html">← Voltar para o menu</a>
             <h1>🐠 Calculadora de Consumo - Aquário</h1>
             <p>Calcule o gasto de energia dos equipamentos do seu aquário</p>
         </div>
@@ -194,6 +206,16 @@
             </div>
 
             <div class="input-group">
+                <label>Escolha a sua fornecedora de energia</label>
+                <select id="fornecedora">
+                    <option value="">Selecione a fornecedora</option>
+                    <option value="cpfl">CPFL</option>
+                    <option value="enel">Enel</option>
+                    <option value="light">Light</option>
+                </select>
+            </div>
+
+            <div class="input-group">
                 <label>Valor do kWh (R$)</label>
                 <input type="number" id="tarifa" step="0.01" placeholder="0.00">
                 <p class="note">Você pode editar manualmente</p>
@@ -230,6 +252,11 @@
             <p><strong>Feito por João Paulo Pompei usando Claude AI • 2026</strong></p>
             <p>Os valores acima são apenas para simulação, sem nenhuma validade legal.</p>
             <p>Nenhuma informação deverá ser tomada como verdade nem usada como referência legal.</p>
+
+            <div class="visitor-counter">
+                <h3>👁️ Visitantes</h3>
+                <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fcalculadora-aquario.vercel.app&count_bg=%2314B8A6&title_bg=%230A7EA4&icon=&icon_color=%23E7E7E7&title=visitas&edge_flat=false" alt="Contador de Visitas">
+            </div>
         </footer>
     </div>
 
