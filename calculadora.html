@@ -269,7 +269,7 @@
     </div>
 
     <script>
-        let equipamentoId = 0;
+  let equipamentoId = 0;
         let dadosFornecedoras = [];
 
         // Carregar arquivo CSV ao iniciar a página
@@ -342,15 +342,14 @@
                     }
                 }
 
-                console.log('Dados processados:', dadosFornecedoras.length, 'fornecedoras');
-                console.log('Primeira fornecedora:', dadosFornecedoras[0]);
-                console.log('Última fornecedora:', dadosFornecedoras[dadosFornecedoras.length - 1]);
+                console.log('✅ Dados processados:', dadosFornecedoras.length, 'fornecedoras');
+                console.log('📊 Primeira fornecedora:', dadosFornecedoras[0]);
 
                 selectFornecedora.innerHTML = '<option value="">Primeiro selecione o estado</option>';
                 errorMsg.style.display = 'none';
 
             } catch (error) {
-                console.error('Erro detalhado ao carregar CSV:', error);
+                console.error('❌ Erro detalhado ao carregar CSV:', error);
                 errorMsg.textContent = 'ERRO: Não foi possível carregar os dados das fornecedoras. Detalhes: ' + error.message;
                 errorMsg.style.display = 'block';
                 selectFornecedora.innerHTML = '<option value="">Erro ao carregar fornecedoras</option>';
@@ -362,7 +361,7 @@
             const estadoSelecionado = document.getElementById('estado').value;
             const selectFornecedora = document.getElementById('fornecedora');
 
-            console.log('Filtrando fornecedoras para estado:', estadoSelecionado);
+            console.log('🔍 Filtrando fornecedoras para estado:', estadoSelecionado);
 
             // Limpar dropdown
             selectFornecedora.innerHTML = '<option value="">Selecione a fornecedora</option>';
@@ -371,7 +370,7 @@
                 // Filtrar fornecedoras do estado selecionado
                 const fornecedorasDoEstado = dadosFornecedoras.filter(f => f.uf === estadoSelecionado);
 
-                console.log('Fornecedoras encontradas:', fornecedorasDoEstado.length);
+                console.log('📋 Fornecedoras encontradas:', fornecedorasDoEstado.length);
 
                 // Ordenar por ranking
                 fornecedorasDoEstado.sort((a, b) => parseInt(a.ranking) - parseInt(b.ranking));
@@ -379,10 +378,11 @@
                 // Adicionar opções ao select
                 fornecedorasDoEstado.forEach(fornecedora => {
                     const option = document.createElement('option');
-                    option.value = fornecedora.distribuidora;
+                    option.value = JSON.stringify(fornecedora); // Guardar objeto completo
                     option.textContent = `${fornecedora.distribuidora} - Ranking: ${fornecedora.ranking} - R$ ${fornecedora.tarifaConvencional}`;
-                    option.dataset.tarifa = fornecedora.tarifaConvencional;
                     selectFornecedora.appendChild(option);
+
+                    console.log('➕ Adicionada:', fornecedora.distribuidora, '- Tarifa:', fornecedora.tarifaConvencional);
                 });
 
                 if (fornecedorasDoEstado.length === 0) {
@@ -400,19 +400,42 @@
             const selectFornecedora = document.getElementById('fornecedora');
             const tarifaInput = document.getElementById('tarifa');
 
+            console.log('💡 Função preencherTarifa() chamada');
+            console.log('   selectedIndex:', selectFornecedora.selectedIndex);
+
             if (selectFornecedora.selectedIndex > 0) {
                 const opcaoSelecionada = selectFornecedora.options[selectFornecedora.selectedIndex];
-                const tarifa = opcaoSelecionada.dataset.tarifa;
-                console.log('Tarifa selecionada:', tarifa);
-                tarifaInput.value = tarifa;
-                calcular();
+                const valorOption = opcaoSelecionada.value;
+
+                console.log('   Valor da option:', valorOption);
+
+                try {
+                    const fornecedora = JSON.parse(valorOption);
+                    const tarifa = fornecedora.tarifaConvencional;
+
+                    console.log('   Objeto fornecedora:', fornecedora);
+                    console.log('   Tarifa extraída:', tarifa);
+                    console.log('   Tipo da tarifa:', typeof tarifa);
+
+                    tarifaInput.value = tarifa;
+
+                    console.log('✅ Tarifa preenchida no input:', tarifaInput.value);
+
+                    calcular();
+                } catch (e) {
+                    console.error('❌ Erro ao parsear JSON:', e);
+                }
             } else {
+                console.log('⚠️ Nenhuma fornecedora selecionada (index = 0)');
                 tarifaInput.value = '';
                 calcular();
             }
         }
 
-        document.getElementById('tarifa').addEventListener('input', calcular);
+        document.getElementById('tarifa').addEventListener('input', function() {
+            console.log('📝 Tarifa editada manualmente:', this.value);
+            calcular();
+        });
 
         function adicionarEquipamento() {
             equipamentoId++;
@@ -445,7 +468,13 @@
         }
 
         function calcular() {
-            const tarifa = parseFloat(document.getElementById('tarifa').value) || 0;
+            const tarifaInput = document.getElementById('tarifa');
+            const tarifa = parseFloat(tarifaInput.value) || 0;
+
+            console.log('🧮 Calculando...');
+            console.log('   Valor do input tarifa:', tarifaInput.value);
+            console.log('   Tarifa convertida (float):', tarifa);
+
             let consumoMensalTotal = 0;
 
             document.querySelectorAll('.equipment-item').forEach(eq => {
@@ -463,6 +492,9 @@
             const custoDiario = consumoDiarioTotal * tarifa;
             const custoAnual = consumoAnualTotal * tarifa;
 
+            console.log('   Consumo mensal:', consumoMensalTotal.toFixed(2), 'kWh');
+            console.log('   Custo mensal: R$', custoMensal.toFixed(2));
+
             document.getElementById('consumoMensal').textContent = consumoMensalTotal.toFixed(2) + ' kWh';
             document.getElementById('custoMensal').textContent = 'R$ ' + custoMensal.toFixed(2).replace('.', ',');
 
@@ -472,6 +504,5 @@
             document.getElementById('consumoAnual').textContent = consumoAnualTotal.toFixed(2) + ' kWh';
             document.getElementById('custoAnual').textContent = 'R$ ' + custoAnual.toFixed(2).replace('.', ',');
         }
-    </script>
 </body>
 </html>
